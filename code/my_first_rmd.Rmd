@@ -38,3 +38,36 @@ beaver_telemetry <- datasets::beaver1 %>%
 
 beaver_telemetry
 ```
+```{r}
+###
+# Perform traversals with conditions
+# based on node `label` regex matches
+###
+
+library(DiagrammeR)
+library(magrittr)
+
+# Create a graph with fruit, vegetables,
+# and nuts
+df <- data.frame(col1 = c("Cat", "Dog", "Bird"),
+                 col2 = c("Feline", "Canis", "Avis"),
+                 stringsAsFactors = FALSE)
+uniquenodes <- unique(c(df$col1, df$col2))
+
+uniquenodes
+```
+
+```{r}
+library(DiagrammeR)
+
+nodes <- create_node_df(n=length(uniquenodes), 
+                        type="number", 
+                        label=uniquenodes)
+edges <- create_edge_df(from=match(df$col1, uniquenodes), 
+                        to=match(df$col2, uniquenodes), 
+                        rel="related")
+g <- create_graph(nodes_df=nodes, 
+                  edges_df=edges)
+render_graph(g)
+```
+
