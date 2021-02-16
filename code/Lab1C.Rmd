@@ -1,0 +1,299 @@
+---
+title: "Lab 1c"
+author: "Michiel Klaassen"
+date: "14-2-2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+options_exercises <- knitr::opts_chunk$set(echo = FALSE,
+                                           warning = FALSE,
+                                           error = FALSE,
+                                           message = FALSE,
+                                           results = 'hide',
+                                           fig.show = 'hide')
+```
+
+# 1. Load example dataset
+
+```{r}
+library(readr)
+df <- read_csv(here::here(
+"data",
+"simple-IO.csv"
+))
+df
+```
+
+1. What are the dimensions of the df dataframe?
+```{r}
+dim(df)
+```
+2. What are the column names of df?
+```{r}
+names(df)
+```
+3. What are the data types of the different columns of df?
+```{r}
+attributes(df)$spec
+```
+
+# 2. Inspecting a dataframe
+
+1. How do we inspect df?
+```{r}
+attributes(df)
+```
+2. How many variables does df have?
+```{r}
+dim(df)[2]
+```
+3. How many rows?
+```{r}
+dim(df)[1]
+```
+4. Call summary() on df; In which variable do we observe the highest expression ratio?
+```{r}
+summary(df)
+```
+    + I'm not sure what an expression ratio is. A quick google led me to believe this is some kind of analysis on variables used in biology.
+    + If it is what I think it intuitively means, a variable with the biggest spread, then I guess it is `swd1_del.`
+    
+# 3. Vector types
+
+1. Run the following code
+```{r}
+a <- c("a", "b", "c", NA)
+b <- c(1:4)
+c <- c(6:8, NA)
+d <- c(1.3, 1.6, 6.7)
+e <- as.integer(d)
+f <- as.integer(a)
+g <- as.numeric(a)
+
+(z <- paste(a, b, c))
+(zz <- paste0(a, b, c))
+```
+2. Inspect the class of each vector
+```{r}
+class(a)
+class(b)
+class(c)
+class(d)
+class(e)
+class(f)
+class(g)
+class(z)
+class(zz)
+```
+3. Combine vctor a to zz in a list.
+```{r}
+combined <- list(a, zz)
+```
+4. Inspect the contents of this list
+```{r}
+combined
+```
+5. Review the documentation for the map() function from the {purrr} package
+    + Apply a method to all children of a vector.
+6. Using map, find the length of each element in the list you created in this exercise
+```{r}
+map(combined, length)
+```
+
+# 4. Matrices
+1. Create a numerical vector named v using the runif() function consisting of 80 values between -10 and 10. Review the help function for the runif() function
+```{r}
+set.seed(123)
+numeric_vector <- runif(80, -10, 10)
+numeric_vector
+```
+
+2. Assign missing values randomly to this vector using the following R code:
+
+```{r}
+set.seed(123)
+numeric_vector[sample(1:80, sample(10:20, 1))] <- NA
+numeric_vector
+```
+
+3. How many missing values do you have?
+```{r}
+missing <- is.na(numeric_vector)
+length(numeric_vector[missing])
+```
+
+4. Create a matrix named m from this numerical vector that has 8 rows. Check to make sure the dimensions are OK!
+
+```{r}
+m <- matrix(numeric_vector, 8)
+m
+```
+
+
+TIP: use the function matrix() to create the matrix
+
+5. Assign row and column names
+
+number the rows column_1:column_8 and the columns column_1:column_10 use the paste() function, set sep = "_"
+
+```{r}
+colnames(m) <- paste(c("column"), c(1:10), sep = "_")
+rownames(m) <- paste(c("row"), c(1:8), sep = "_")
+m
+```
+
+# 5. Select statements
+1. From row 4 select all values greater than 3. How many are there?
+    + I did row 3 because that seems more interesting for this exercise.
+```{r}
+row_4 <- m[3, 1:10]
+gt3 <- row_4 > 3
+gt3_row4 <- row_4[gt3]
+gt3_row4
+sum(gt3, na.rm = TRUE)
+```
+ 
+2. What is the average of these numbers?
+```{r}
+mean(gt3_row4, na.rm = TRUE)
+```
+
+4. Do the same, but now also exclude missing values. How many values did you select now?
+    + See above
+    
+# 6. Storing intermediate products as index
+1. Use this vector to create a new matrix that only contains these rows. Make sure you have a good look at the data structure to ensure you have selected the correct values.
+```{r}
+row_ind_numeric <- c(1, 4, 8)
+row_ind_numeric
+col_ind_numeric <- c(1:10)
+col_ind_numeric
+m[row_ind_numeric, col_ind_numeric]
+```
+
+```{r}
+row_ind_textual <- rownames(m)[row_ind_numeric]
+row_ind_textual
+col_ind_textual <- colnames(m)[col_ind_numeric]
+col_ind_textual
+m[row_ind_textual, col_ind_textual]
+```
+
+2. For the second row in this new matrix, select all values between -2.5 and 4, excluding missing values. How many are there and what is the average?
+```{r}
+row2 <- m[2, col_ind_numeric]
+row2
+filter = row2 > -2.5 & row2 < 4 & !is.na(row2)
+filter
+row2[filter]
+mean(row2[filter])
+```
+
+# 7. Data frames
+1. Make a `data.frame` called `blood` of the table below.
+```{r}
+subjects = c("human1", "human3 |contro", "human4 |50 ng/", "human5 |50 ng/", "human6 |50 ng/")
+treatments = c("control", "control", "50 ng/mg", "50 ng/mg", "50 ng/mg")
+weights = c("80", "78 |78 / 1","76 |90 / 1","83 |92 / 1","81 |87 / 1")
+bloodpressures = c("80 / 120","78 / 115","90 / 125","92 / 120","87 / 119")
+cholesterols = c(20, 32, 45, 43, NA)
+
+blood <- data.frame(
+    subject = subjects,
+    treatment = treatments,
+    weight = weights,
+    "blook pressure" = bloodpressures,
+    cholesterol = cholesterols
+)
+blood
+```
+
+2. Convert this `blood` `data.frame` to a tibble.
+```{r}
+blood_tibble <- tibble(blood)
+blood_tibble
+```
+
+3. Create a tibble called `combined` from the individual vectors below.
+```{r}
+nr <- c(1.8, 4.5, 10.1, 8.3, 7.5)
+prime <- c(seq(1, 7, 2), 11)
+valid <- c(TRUE, FALSE, FALSE, TRUE, FALSE)
+name <- c("abc1", "foo2", "bar3", "app5", "bar1")
+combined <- tibble(nr, prime, valid, name)
+combined
+```
+
+4. Get the values from the `prime` column. Use at least two different ways (there are three). Calculate the root-square of the sum of these values. Use a pipe operator `%>%`
+```{r}
+prime_numeric <- combined[,2]
+prime_numeric
+
+prime_textual <- combined[, "prime"]
+prime_textual
+
+prime_vec <- pull(combined, prime)
+prime_vec
+
+prime_textual %>% sum() %>% sqrt()
+```
+
+5. Select the second value of the `nr` column. Use at least two different ways (there are at least 4).
+
+```{r}
+nr_numeric <- combined[,1]
+nr_numeric[2,]
+
+nr_textual <- combined[, "nr"]
+nr_textual[2,]
+
+nr_vec <- pull(combined, nr)
+nr_vec
+```
+
+6. Calculate the sum of the `prime` column.
+```{r}
+sum(prime_textual)
+```
+
+7. Combine the `nr` and `prime` columns (vectors) into a new vector.
+```{r}
+c(nr_vec, prime_vec)
+```
+
+# 8. Ordering
+```{r}
+mydata <- data.frame(
+    id = c(1, 4, 5, 3, 2),
+    nr = c(1.8, 8.3, 7.5, 10.1, 4.5),
+    name = c(1, 7, 11, 5, 3),
+    characters = c("abc1", "app5", "bar1", "bar3", "foo2"),
+    valid = c(TRUE, TRUE, FALSE, FALSE, FALSE)
+)
+mydata
+```
+
+1. Order the data.frame based on the `nr` column in increasing order.
+```{r}
+mydata[order(mydata$nr),]
+```
+
+2. Order the data.frame alphabetically using the character column.
+```{r}
+mydata[order(mydata$characters),]
+```
+
+3. Order the data.frame based on the `nr` column in decreasing order.
+```{r}
+mydata[order(mydata$nr, decreasing = TRUE),]
+```
+
+4. What happens if you use the valid column for ordering? Can you explain this?
+```{r}
+mydata[order(mydata$valid),]
+mydata[order(mydata$valid, decreasing = TRUE),]
+```
+If it is like other languages, and using bit logic, FALSE equals 0 and TRUE equals 1.
